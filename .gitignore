@@ -1,0 +1,6 @@
+﻿/config/*
+/.vs
+/public/uploads/*
+/mon_projet.phpproj
+/mon_projet.phpproj.user
+/mon_projet.sln
