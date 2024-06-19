@@ -71,7 +71,11 @@ body {
     transition: transform 0.2s;
 }
 
-.card:hover {
+a .card {
+    border-color: rgba(13, 110, 253, 0.5);
+}
+
+a:hover .card {
     transform: translateY(-10px);
 }
 
