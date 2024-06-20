@@ -20,9 +20,6 @@ Session::init();
 $configuration = new ConfigurationController;
 $configuration->initConfig();
 
-$visit = new VisitController();
-$visit->logVisit($_SERVER['REMOTE_ADDR']);
-
 $router = new Router();
 
 // Home routes
@@ -98,6 +95,9 @@ $router->add('GET',  '/maintenance', ErrorController::class, 'maintenance');
 // Dispatch the request
 $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $requestMethod = $_SERVER['REQUEST_METHOD'];
+
+$visit = new VisitController();
+$visit->logVisit($_SERVER['REMOTE_ADDR'], $requestUri, $requestMethod);
 
 $isPageFound = $router->dispatch($requestUri, $requestMethod);
 

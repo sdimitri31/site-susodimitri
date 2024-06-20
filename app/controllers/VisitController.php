@@ -22,9 +22,9 @@ class VisitController
         View::render('admin/visits/index.php');
     }
 
-    public function logVisit($ip)
+    public function logVisit($ip, $url, $method)
     {
-        $this->visit->logVisit($ip);
+        $this->visit->logVisit($ip, $url, $method);
     }
 
     public function getVisitStats()
