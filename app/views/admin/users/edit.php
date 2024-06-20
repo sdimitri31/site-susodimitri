@@ -2,21 +2,16 @@
 use App\Helpers\View;
 use App\Models\Role;
 
-$title = "Éditer l'utilisateur";
+$title = "Édition de l'utilisateur : " . $user->getUsername();
 ?>
 <?php ob_start(); ?>
 <div class="shadow row mt-4 bg-body-tertiary">
     <div class="col px-4 py-2">
-        <h1>Éditer l'utilisateur</h1>
+        <h1><?= $title ?></h1>
     </div>
 </div>
 <div class="row">
     <div class="col mt-4 px-4 py-2">
-        <?php 
-        if (isset($error)) {
-            echo '<div class="alert alert-danger" role="alert">Erreur : ' . htmlspecialchars($error) . '</div>';
-        }
-        ?>
         <form action="/admin/users/<?= $user->getId(); ?>/update" method="post">
             <div class="mb-3">
                 <label for="username" class="form-label">Nom d'utilisateur</label>

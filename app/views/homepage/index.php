@@ -1,4 +1,4 @@
-<?php 
+<?php
 use App\Helpers\View;
 
 $title = "Accueil";
@@ -7,14 +7,14 @@ $title = "Accueil";
 <?php ob_start(); ?>
 <div class="shadow row mt-4 bg-body-tertiary">
     <div class="col px-4 py-2">
-        <h1><?php echo htmlspecialchars($homepageTitle); ?></h1>
+        <h1><?php echo htmlspecialchars($homepage['title']); ?></h1>
     </div>
 </div>
 <div class="row">
     <div class="col mt-4 px-4 py-2">
         <div class="ql-container ql-snow mb-3" style="border-width: 0;">
             <div class="ql-editor">
-                <?php echo $homepageContent; ?>
+            <?php echo $homepage['content']; ?>
             </div>
         </div>
     </div>

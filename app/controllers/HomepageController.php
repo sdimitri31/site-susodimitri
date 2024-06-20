@@ -2,34 +2,45 @@
 
 namespace App\Controllers;
 
+use App\Helpers\Session;
 use App\Models\Homepage;
 use App\Models\Permission;
 use App\Helpers\Authorization;
 use App\Helpers\View;
+use Exception;
 
 class HomepageController
 {
-    public function index()
+    public function index($context = 'user')
     {
-        $content = Homepage::getContent();
-        $title = $content['title'];
-        $content = $content['content'];
-        View::render('homepage/index.php', ['homepageTitle' => $title, 'homepageContent' => $content]);
-    }
+        $homepage = Homepage::getHomepage();
+        if (is_null($homepage)) {
+            Session::set('error', 'Erreur lors de la recherche de la page d\'accueil.');
+        } elseif (empty($homepage)) {
+            Session::set('error', 'Aucune page d\'accueil trouvée.');
+        }
 
-    public function adminIndex()
-    {
-        Authorization::requirePermission(Permission::MANAGE_HOMEPAGE, '/home');
-
-        $content = Homepage::getContent();
-        View::render('admin/homepage/index.php', ['content' => $content]);
+        if ($context == 'user') {
+            View::render('homepage/index.php', ['homepage' => $homepage]);
+        } else if ($context == 'admin') {
+            Authorization::requirePermission(Permission::MANAGE_HOMEPAGE, '/home');
+            View::render('admin/homepage/index.php', ['homepage' => $homepage]);
+        }
     }
 
     public function edit()
     {
         Authorization::requirePermission(Permission::MANAGE_HOMEPAGE, '/home');
-
-        $content = Homepage::getContent();
+        $content = Homepage::getHomepage();
+        if (is_null($content)) {
+            Session::set('error', 'Erreur lors de la recherche de la page d\'accueil.');
+            self::index('admin');
+            exit();
+        } elseif (empty($content)) {
+            Session::set('error', 'Page d\'accueil non trouvée.');
+            self::index('admin');
+            exit();
+        }
         View::render('admin/homepage/edit.php', ['content' => $content]);
     }
 
@@ -41,8 +52,13 @@ class HomepageController
             'title' => $_POST['title'] ?? '',
             'content' => $_POST['content'] ?? ''
         ];
-
-        Homepage::updateContent($data);
-        header('Location: /admin/homepage');
+        try {
+            Homepage::updateContent($data);
+            Session::set('message', 'Page d\'accueil éditée avec succès !');
+            self::index('admin');
+        }catch (Exception $e) {
+            Session::set('error', $e->getMessage());
+            self::edit();
+        }
     }
 }

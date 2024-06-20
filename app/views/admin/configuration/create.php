@@ -1,23 +1,21 @@
 <?php 
 use App\Helpers\View;
 
-$title = "Administration des paramètres";
+$title = "Création d'un paramètre";
 ?>
 <?php ob_start(); ?>
 <div class="shadow row mt-4 bg-body-tertiary">
     <div class="col px-4 py-2">
-        <h1>Ajouter un nouveau paramètre</h1>
+        <h1><?= $title ?></h1>
     </div>
 </div>
 <div class="row">
     <div class="col mt-4 px-4 py-2">
-        <?php if (isset($_SESSION['message'])): ?>
-            <div class="alert alert-success"><?= htmlspecialchars($_SESSION['message']) ?></div>
-            <?php unset($_SESSION['message']); ?>
+        <?php if (isset($message['message'])): ?>
+            <div class="alert alert-success"><?= htmlspecialchars($message['message']) ?></div>
         <?php endif; ?>
-        <?php if (isset($_SESSION['error'])): ?>
-            <div class="alert alert-danger"><?= htmlspecialchars($_SESSION['error']) ?></div>
-            <?php unset($_SESSION['error']); ?>
+        <?php if (isset($message['error'])): ?>
+            <div class="alert alert-danger"><?= htmlspecialchars($message['error']) ?></div>
         <?php endif; ?>
         <div class="row">
             <form action="/admin/configuration/create" method="post" class="mt-3">

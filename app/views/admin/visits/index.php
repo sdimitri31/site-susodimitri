@@ -19,7 +19,7 @@ $stats = [
 
 <div class="shadow row mt-4 bg-body-tertiary">
     <div class="col px-4 py-2">
-        <h1>Visites</h1>
+        <h1><?= $title ?></h1>
     </div>
 </div>
 <div class="row">

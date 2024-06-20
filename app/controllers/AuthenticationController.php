@@ -30,7 +30,7 @@ class AuthenticationController
                 throw new Exception("Erreur CSRF détectée.");
             }
 
-            $user = User::findByUsername($username);
+            $user = User::getUserByUsername($username);
 
             if (!$user) {
                 throw new Exception("Identifiants incorrect.");
@@ -92,7 +92,7 @@ class AuthenticationController
     public static function getAuthenticatedUser()
     {
         if (Session::get('user_id') !== null) {
-            return User::findById(Session::get('user_id'));
+            return User::getUserById(Session::get('user_id'));
         }
         return null;
     }

@@ -1,66 +1,35 @@
 <?php
 use App\Helpers\View;
+use App\Models\Contact;
 
 $title = "Contact";
-
+$contacts = Contact::getAllContacts();
 ?>
 <?php ob_start(); ?>
 <div class="shadow row mt-4 bg-body-tertiary">
     <div class="col px-4 py-2">
-        <h1>Contact</h1>
+        <h1><?= $title ?></h1>
     </div>
 </div>
 <div class="row">
     <div class="col mt-4 px-4 py-2">
         <div class="row">
-            <div class="col-md-4 mb-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Nom</h5>
-                        <p class="m-0">Suso Dimitri</p>
-                    </div>
+            <?php foreach ($contacts as $contact): ?>
+                <div class="col-md-4 mb-4">
+                    <?php if (!empty($contact['link'])): ?>
+                        <a href="<?= htmlspecialchars($contact['link']) ?>" target="_blank" class="text-decoration-none">
+                    <?php endif; ?>
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title"><?= htmlspecialchars($contact['title']) ?></h5>
+                                    <p class="m-0"><?= htmlspecialchars($contact['text']) ?></p>
+                                </div>
+                            </div>
+                    <?php if (!empty($contact['link'])): ?>
+                        </a>
+                    <?php endif; ?>
                 </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <a href="mailto:suso.dimitri@gmail.com" class="text-decoration-none">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h5 class="card-title">Email</h5>
-                            <p class="m-0">suso.dimitri@gmail.com</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-4 mb-4">
-                <a href="https://github.com/sdimitri31" class="text-decoration-none">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h5 class="card-title">GitHub</h5>
-                            <p class="m-0">@sdimitri31</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-4 mb-4">
-                <a href="https://www.instagram.com/sdimitri31/" class="text-decoration-none">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h5 class="card-title">Instagram</h5>
-                            <p class="m-0">@sdimitri31</p>
-                        </div>
-                    </div>
-                </a>
-            </div>            
-            <div class="col-md-4 mb-4">
-                <a href="https://www.linkedin.com/in/dimitri-suso-797b17314/" class="text-decoration-none">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <h5 class="card-title">Linkedin</h5>
-                            <p class="m-0">Dimitri Suso</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </div>

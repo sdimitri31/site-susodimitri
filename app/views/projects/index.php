@@ -1,14 +1,14 @@
-<?php 
+<?php
 use App\Helpers\View;
 
-$title = "Projets";
+$title = "Mes projets";
 ?>
 
 <?php ob_start(); ?>
 
 <div class="shadow row mt-4 bg-body-tertiary">
     <div class="col px-4 py-2">
-        <h1>Mes Projets</h1>
+        <h1><?= $title ?></h1>
     </div>
 </div>
 <div class="row">
@@ -18,7 +18,7 @@ $title = "Projets";
                 <div class="col-md-4 mb-4">
                     <a href="/projects/show/<?php echo $project['id']; ?>" class="text-decoration-none">
                         <div class="card h-100">
-                            <img src="/uploads/projects/<?php echo $project['id'] .'/'.htmlspecialchars($project['image_name']); ?>" class="card-img-top" alt="Image de <?php echo htmlspecialchars($project['name']); ?>">
+                            <img src="/uploads/projects/<?php echo $project['id'] . '/' . htmlspecialchars($project['image_name']); ?>" class="card-img-top" alt="Image de <?php echo htmlspecialchars($project['name']); ?>" />
                             <div class="card-body">
                                 <h5 class="card-title"><?php echo htmlspecialchars($project['name']); ?></h5>
                                 <p class="card-text"><?php echo htmlspecialchars($project['description']); ?></p>

@@ -41,10 +41,19 @@ class Upload
         }
     }
 
-    public static function moveTempFiles($dataJson, $folder)
+    public static function moveTempFiles($data, $folder)
     {
-        // Decode the JSON string to an array
-        $dataTable = json_decode($dataJson, true);
+        if (is_string($data)) {
+            // Si c'est une chaîne, décodez-la en tableau
+            $dataTable = json_decode($data, true);
+        } elseif (is_array($data)) {
+            // Si c'est déjà un tableau, utilisez-le directement
+            $dataTable = $data;
+        } else {
+            // Si le format est incorrect, retournez sans rien faire
+            return;
+        }
+
         if ($dataTable === null) {
             return;
         }

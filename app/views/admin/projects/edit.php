@@ -1,12 +1,12 @@
 <?php 
 use App\Helpers\View;
 
-$title = "Edition du projet : " . $project['name'];
+$title = "Édition du projet : " . $project['name'];
 ?>
 <?php ob_start(); ?>
 <div class="shadow row mt-4 bg-body-tertiary">
     <div class="col px-4 py-2">
-        <h1>Éditer le projet</h1>
+        <h1><?= $title ?></h1>
     </div>
 </div>
 <div class="row">

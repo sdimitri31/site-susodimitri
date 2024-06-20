@@ -13,7 +13,7 @@ $hasManageConfigurationPermission = Authorization::hasRequiredPermission(Permiss
 <?php ob_start(); ?>
 <div class="shadow row mt-4 bg-body-tertiary">
     <div class="col px-4 py-2">
-        <h1>Panneau d'administration</h1>
+        <h1><?= $title ?></h1>
     </div>
 </div>
 <div class="row">
@@ -73,6 +73,16 @@ $hasManageConfigurationPermission = Authorization::hasRequiredPermission(Permiss
                         <div class="card-body text-center">
                             <h5 class="card-title">Visites</h5>
                             <p class="card-text">Voir les statistiques des visites.</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4 mb-4">
+                <a href="/admin/contacts" class="text-decoration-none">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Gestion des moyens de contact</h5>
+                            <p class="card-text">Ajouter, modifier ou supprimer des contacts.</p>
                         </div>
                     </div>
                 </a>

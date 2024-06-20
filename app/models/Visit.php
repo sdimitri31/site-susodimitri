@@ -8,17 +8,15 @@ use PDOException;
 
 class Visit
 {
-    private $db;
-
     public function __construct()
     {
-        $this->db = (new Database())->getPdo();
     }
 
     public function logVisit($ip, $url, $method)
     {
         try {
-            $stmt = $this->db->prepare("INSERT INTO visits (ip, requested_url, requested_method, visited_at) VALUES (?, ?, ?, NOW())");
+            $db = Database::getConnection();
+            $stmt = $db->prepare("INSERT INTO visits (ip, requested_url, requested_method, visited_at) VALUES (?, ?, ?, NOW())");
             return $stmt->execute([$ip, $url, $method]);
         } catch (PDOException $e) {
             error_log('PDOException - ' . $e->getMessage(), 0);
@@ -29,7 +27,8 @@ class Visit
     public function getVisitStats()
     {
         try {
-            $stmt = $this->db->prepare("SELECT DATE(visited_at) AS visit_date, COUNT(*) AS visit_count FROM visits GROUP BY visit_date ORDER BY visit_date DESC");
+            $db = Database::getConnection();
+            $stmt = $db->prepare("SELECT DATE(visited_at) AS visit_date, COUNT(*) AS visit_count FROM visits GROUP BY visit_date ORDER BY visit_date DESC");
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
@@ -41,7 +40,8 @@ class Visit
     public function countTotalVisits()
     {
         try {
-            $stmt = $this->db->query("
+            $db = Database::getConnection();
+            $stmt = $db->query("
                 SELECT COUNT(*) AS total_visits
                 FROM (
                     SELECT ip, DATE(visited_at) AS visit_date
@@ -59,7 +59,8 @@ class Visit
     public function countVisitsAtDate($date)
     {
         try {
-            $stmt = $this->db->prepare("SELECT COUNT(DISTINCT ip) AS visits_count FROM visits WHERE DATE(visited_at) = ?");
+            $db = Database::getConnection();
+            $stmt = $db->prepare("SELECT COUNT(DISTINCT ip) AS visits_count FROM visits WHERE DATE(visited_at) = ?");
             $stmt->execute([$date]);
             return $stmt->fetch(PDO::FETCH_ASSOC)['visits_count'];
         } catch (PDOException $e) {

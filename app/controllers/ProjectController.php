@@ -2,71 +2,116 @@
 
 namespace App\Controllers;
 
+use App\Helpers\Session;
 use App\Models\Project;
 use App\Models\Permission;
 use App\Helpers\Authorization;
 use App\Helpers\View;
 use App\Helpers\Upload;
+use Exception;
+use PDOException;
 
 class ProjectController
 {
-    private $projectModel;
-
     public function __construct()
     {
-        $this->projectModel = new Project();
     }
 
-    public function index()
+    public function index($context = 'user')
     {
-        $projects = $this->projectModel->getAllProjects();
-        View::render('projects/index.php', ['projects' => $projects]);
+        $projects = Project::getAllProjects();
+        if (is_null($projects)) {
+            Session::set('error', 'Erreur lors de la recherche du projet.');
+        } elseif (empty($projects)) {
+            Session::set('error', 'Aucun projet trouvé.');
+        }
+
+        if ($context == 'user') {
+            View::render('projects/index.php', ['projects' => $projects]);
+        } else if ($context == 'admin') {
+            View::render('admin/projects/index.php', ['projects' => $projects]);
+        }
     }
 
     public function show($id)
     {
-        $project = $this->projectModel->getProjectById($id);
+        $project = Project::getProjectById($id);
+        if (is_null($project)) {
+            Session::set('error', 'Erreur lors de la recherche du projet.');
+            self::index();
+            exit();
+        } elseif (empty($project)) {
+            Session::set('error', 'Projet non trouvé.');
+            self::index();
+            exit();
+        }
+
         View::render('projects/show.php', ['project' => $project]);
     }
 
-    public function create($error = null)
+    public function create()
     {
         Authorization::requirePermission(Permission::MANAGE_PROJECTS, '/home');
-        View::render('admin/projects/create.php', ['error' => $error]);
+        View::render('admin/projects/create.php');
     }
 
     public function store()
     {
         Authorization::requirePermission(Permission::MANAGE_PROJECTS, '/home');
         try {
-            $this->projectModel->setName($_POST['name']);
-            $this->projectModel->setDescription($_POST['description']);
-            $this->projectModel->setContent($_POST['content']);
-            $this->projectModel->setPosition($_POST['position']);
-            $this->projectModel->save();
+            // Upload in temp folder first
+            $imageName = Upload::uploadImage($_FILES["image"], 'temp/');
 
-            $imagePath = "/projects/" . $this->projectModel->getId() . "/";
-            $imageName = Upload::uploadImage($_FILES["image"], $imagePath);
+            // Generate id
+            $project = new Project(
+                null,
+                $_POST['name'],
+                $_POST['description'],
+                $_POST['content'],
+                $imageName,
+                $_POST['position']
+            );
 
+            if ($project->save() === null) {
+                throw new Exception('Une erreur est survenue lors de l\'enregistrement du projet');
+            }
+
+            // Move images to project folder
+            $imagePath = "/projects/" . $project->getId() . "/";
+            Upload::moveTempFiles([['name' => $imageName]], $imagePath);
             Upload::moveTempFiles($_POST['dataJson'], $imagePath);
 
-            $contentWithUpdatedPath = Upload::updateImagePathsInHtml($this->projectModel->getContent(), $imagePath);
-            $this->projectModel->setContent($contentWithUpdatedPath);
-            $this->projectModel->setImageName($imageName);
+            // Update path of images in content
+            $contentWithUpdatedPath = Upload::updateImagePathsInHtml($project->getContent(), $imagePath);
+            $project->setContent($contentWithUpdatedPath);
 
-            $this->projectModel->save();
+            // Final save
+            if ($project->save() === null) {
+                throw new Exception('Une erreur est survenue lors de l\'enregistrement du projet');
+            }
 
-            header('Location: /projects');
-        } catch (\Exception $e) {
-            self::create($e->getMessage());
+            Session::set('message', 'Projet ajouté avec succès !');
+            self::index('admin');
+        } catch (Exception $e) {
+            Session::set('error', $e->getMessage());
+            self::create();
         }
     }
 
-    public function edit($id, $error = null)
+    public function edit($id)
     {
         Authorization::requirePermission(Permission::MANAGE_PROJECTS, '/home');
-        $project = $this->projectModel->getProjectById($id);
-        View::render('admin/projects/edit.php', ['project' => $project, 'error' => $error]);
+        $project = Project::getProjectById($id);
+        if (is_null($project)) {
+            Session::set('error', 'Erreur lors de la recherche du projet.');
+            self::index('admin');
+            exit();
+        } elseif (empty($project)) {
+            Session::set('error', 'Projet non trouvé.');
+            self::index('admin');
+            exit();
+        }
+        View::render('admin/projects/edit.php', ['project' => $project]);
     }
 
     public function update($id)
@@ -80,37 +125,41 @@ class ProjectController
             } else {
                 $imageName = Upload::uploadImage($_FILES["image"], $imagePath);
             }
-            $this->projectModel->setId($id);
-            $this->projectModel->setName($_POST['name']);
-            $this->projectModel->setDescription($_POST['description']);
-            $this->projectModel->setPosition($_POST['position']);
-            $this->projectModel->setImageName($imageName);
-
             Upload::moveTempFiles($_POST['dataJson'], $imagePath);
             $contentWithUpdatedPath = Upload::updateImagePathsInHtml($_POST['content'], '/uploads' . $imagePath);
 
-            $this->projectModel->setContent($contentWithUpdatedPath);
+            $project = new Project(
+                $id,
+                $_POST['name'],
+                $_POST['description'],
+                $contentWithUpdatedPath,
+                $imageName,
+                $_POST['position']
+            );
 
-            $this->projectModel->save();
+            if ($project->save() === null) {
+                throw new Exception('Une erreur est survenue lors de la mise à jour du projet');
+            }
 
-            header('Location: /projects');
-        } catch (\Exception $e) {
-            self::edit($id, $e->getMessage());
+            Session::set('message', 'Projet édité avec succès !');
+            self::index('admin');
+        } catch (Exception $e) {
+            Session::set('error', $e->getMessage());
+            self::edit($id);
         }
     }
 
     public function destroy($id)
     {
         Authorization::requirePermission(Permission::MANAGE_PROJECTS, '/home');
-        $this->projectModel->deleteProject($id);
-        header('Location: /admin/projects');
+        try {
+            Project::destroy($id);
+            Session::set('message', 'Projet supprimé avec succès !');
+        } catch (PDOException $e) {
+            Session::set('error', 'Erreur lors de la suppression du projet.');
+        }
+        self::index('admin');
     }
 
-    public function adminIndex()
-    {
-        Authorization::requirePermission(Permission::MANAGE_PROJECTS, '/home');
-        $projects = $this->projectModel->getAllProjects();
-        View::render('admin/projects/index.php', ['projects' => $projects]);
-    }
 
 }

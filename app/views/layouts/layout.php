@@ -2,7 +2,8 @@
 
 use App\Helpers\View;
 use App\Controllers\AuthenticationController;
-use App\Models\User;
+use App\Helpers\AlertMessage;
+
 
 $title = isset($title) ? $title : null ;
 $loggedUser = AuthenticationController::getAuthenticatedUser();
@@ -18,6 +19,7 @@ $loggedUser = AuthenticationController::getAuthenticatedUser();
         <?php View::render('layouts/menu.php', ['loggedUser' => $loggedUser]); ?>
 
         <div class="container flex-grow-1">
+            <?= AlertMessage::displayMessages() ?>
             <?php echo $content; ?>
         </div>
 

@@ -7,7 +7,6 @@ use PDOException;
 
 class Project
 {
-    private $db;
     private $id;
     private $name;
     private $description;
@@ -67,7 +66,6 @@ class Project
 
     public function __construct($id = null, $name = '', $description = '', $content = '', $imageName = '', $position = '')
     {
-        $this->db = (new Database())->getPdo();
         $this->id = $id;
         $this->name = $name;
         $this->description = $description;
@@ -76,87 +74,104 @@ class Project
         $this->position = $position;
     }
 
-    public function getAllProjects()
+    public static function getAllProjects()
     {
-        $stmt = $this->db->prepare("SELECT * FROM projects ORDER BY position");
-        $stmt->execute();
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("SELECT * FROM projects ORDER BY position");
+            $stmt->execute();
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log('PDOException - Project::getAllProjects() : ' . $e->getMessage(), 0);
+            return null;
+        }
     }
 
-    public function getProjectById($id)
+    public static function getProjectById($id)
     {
-        $stmt = $this->db->prepare("SELECT * FROM projects WHERE id = :id");
-        $stmt->bindParam(':id', $id, \PDO::PARAM_INT);
-        $stmt->execute();
-        return $stmt->fetch(\PDO::FETCH_ASSOC);
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("SELECT * FROM projects WHERE id = :id");
+            $stmt->bindParam(':id', $id, \PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetch(\PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log('PDOException - Project::getProjectById() : ' . $e->getMessage(), 0);
+            return null;
+        }
     }
 
     public function save()
     {
         if ($this->id === null) {
-            $stmt = $this->db->prepare("INSERT INTO projects (name, description, content, image_name, position)
-                                        VALUES (:name, :description, :content, :image_name, :position)");
-            $stmt->bindParam(':name', $this->name);
-            $stmt->bindParam(':description', $this->description);
-            $stmt->bindParam(':content', $this->content);
-            $stmt->bindParam(':image_name', $this->imageName);
-            $stmt->bindParam(':position', $this->position, \PDO::PARAM_INT);
-            try {
-                $stmt->execute();
-                $this->id = $this->db->lastInsertId();
-                return $this->id;
-            } catch (PDOException $e) {
-                throw new \Exception($e->getMessage());
-            }
+            $this->id = Project::create([
+                'name' => $this->name,
+                'description' => $this->description,
+                'content' => $this->content,
+                'image_name' => $this->imageName,
+                'position' => $this->position
+            ]);
         } else {
-            $stmt = $this->db->prepare("UPDATE projects SET name = :name, description = :description, content = :content, image_name = :image_name, position = :position WHERE id = :id");
-            $stmt->bindParam(':id', $this->id, \PDO::PARAM_INT);
-            $stmt->bindParam(':name', $this->name);
-            $stmt->bindParam(':description', $this->description);
-            $stmt->bindParam(':content', $this->content);
-            $stmt->bindParam(':image_name', $this->imageName);
-            $stmt->bindParam(':position', $this->position, \PDO::PARAM_INT);
-            try {
-                $stmt->execute();
-                return $this->id;
-            } catch (PDOException $e) {
-                throw new \Exception($e->getMessage());
-            }
+            $this->id = Project::update([
+                'id' => $this->id,
+                'name' => $this->name,
+                'description' => $this->description,
+                'content' => $this->content,
+                'image_name' => $this->imageName,
+                'position' => $this->position
+            ]);
         }
+        return $this->id;
     }
 
-    public function addProject($data)
+    public static function create($data)
     {
-        $stmt = $this->db->prepare("INSERT INTO projects (name, description, content, image_name, position) VALUES (:name, :description, :content, :image_name, :position)");
-        $stmt->bindParam(':name', $data['name']);
-        $stmt->bindParam(':description', $data['description']);
-        $stmt->bindParam(':content', $data['content']);
-        $stmt->bindParam(':image_name', $data['imageName']);
-        $stmt->bindParam(':position', $data['position'], \PDO::PARAM_INT);
         try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("INSERT INTO projects (name, description, content, image_name, position) VALUES (:name, :description, :content, :image_name, :position)");
+            $stmt->bindParam(':name', $data['name']);
+            $stmt->bindParam(':description', $data['description']);
+            $stmt->bindParam(':content', $data['content']);
+            $stmt->bindParam(':image_name', $data['image_name']);
+            $stmt->bindParam(':position', $data['position'], \PDO::PARAM_INT);
             $stmt->execute();
-            return $this->db->lastInsertId();
+
+            return $db->lastInsertId();
         } catch (PDOException $e) {
-            throw new \Exception($e->getMessage());
+            error_log('PDOException - Project::create() : ' . $e->getMessage(), 0);
+            return null;
         }
     }
 
-    public function updateProject($id, $data)
+    public static function update($data)
     {
-        $stmt = $this->db->prepare("UPDATE projects SET name = :name, description = :description, content = :content, image_name = :image_name, position = :position WHERE id = :id");
-        $stmt->bindParam(':id', $id, \PDO::PARAM_INT);
-        $stmt->bindParam(':name', $data['name']);
-        $stmt->bindParam(':description', $data['description']);
-        $stmt->bindParam(':content', $data['content']);
-        $stmt->bindParam(':image_name', $data['imageName']);
-        $stmt->bindParam(':position', $data['position'], \PDO::PARAM_INT);
-        $stmt->execute();
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("UPDATE projects SET name = :name, description = :description, content = :content, image_name = :image_name, position = :position WHERE id = :id");
+            $stmt->bindParam(':id', $data['id'], \PDO::PARAM_INT);
+            $stmt->bindParam(':name', $data['name']);
+            $stmt->bindParam(':description', $data['description']);
+            $stmt->bindParam(':content', $data['content']);
+            $stmt->bindParam(':image_name', $data['image_name']);
+            $stmt->bindParam(':position', $data['position'], \PDO::PARAM_INT);
+            $stmt->execute();
+            return $data['id'];
+        } catch (PDOException $e) {
+            error_log('PDOException - Project::update() : ' . $e->getMessage(), 0);
+            return null;
+        }
     }
 
-    public function deleteProject($id)
+    public static function destroy($id)
     {
-        $stmt = $this->db->prepare("DELETE FROM projects WHERE id = :id");
-        $stmt->bindParam(':id', $id, \PDO::PARAM_INT);
-        $stmt->execute();
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("DELETE FROM projects WHERE id = :id");
+            $stmt->bindParam(':id', $id, \PDO::PARAM_INT);
+            $stmt->execute();
+        } catch (PDOException $e) {
+            error_log('PDOException - Project::destroy() : ' . $e->getMessage(), 0);
+            throw new PDOException($e->getMessage(), (int) $e->getCode());
+        }
     }
 }

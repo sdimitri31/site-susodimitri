@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Core\Database;
 use PDO;
+use PDOException;
 
 class User
 {
@@ -122,74 +123,119 @@ class User
 
     public function save()
     {
-        $db = (new Database())->getPdo();
         if ($this->id === null) {
+            $this->create();
+        } else {
+            $this->update();
+        }
+        return $this->id;
+    }
+
+    private function create()
+    {
+        try {
+            $db = Database::getConnection();
             $stmt = $db->prepare("INSERT INTO users (username, password_hash, role, created_at, updated_at)
                                   VALUES (?, ?, ?, ?, ?)");
             $stmt->execute([$this->username, $this->passwordHash, $this->role, $this->createdAt, $this->updatedAt]);
             $this->id = $db->lastInsertId();
-        } else {
+
+            return $this->id;
+        } catch (PDOException $e) {
+            error_log('PDOException - User::create() : ' . $e->getMessage(), 0);
+            return null;
+        }
+    }
+
+    private function update()
+    {
+        try {
+            $db = Database::getConnection();
             $stmt = $db->prepare("UPDATE users
                                   SET username = ?, password_hash = ?, role = ?, updated_at = ?, last_login_at = ?, locked_until = ?
                                   WHERE id = ?");
             $stmt->execute([$this->username, $this->passwordHash, $this->role, $this->updatedAt, $this->lastLoginAt, $this->lockedUntil, $this->id]);
+            return $this->id;
+        } catch (PDOException $e) {
+            error_log('PDOException - User::update() : ' . $e->getMessage(), 0);
+            return null;
         }
     }
 
     public static function getAllUsers()
     {
-        $db = (new Database())->getPdo();
-        $stmt = $db->query("SELECT * FROM users");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
-    public static function findById($id)
-    {
-        $db = (new Database())->getPdo();
-        $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
-        $stmt->execute([$id]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!$user) {
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->query("SELECT * FROM users");
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log('PDOException - User::getAllProjects() : ' . $e->getMessage(), 0);
             return null;
         }
-        return new self(
-            $user['id'],
-            $user['username'],
-            $user['password_hash'],
-            $user['role'],
-            $user['created_at'],
-            $user['updated_at'],
-            $user['last_login_at'],
-            $user['locked_until']
-        );
     }
 
-    public static function findByUsername($username)
+    public static function getUserById($id)
     {
-        $db = (new Database())->getPdo();
-        $stmt = $db->prepare("SELECT * FROM users WHERE username = ?");
-        $stmt->execute([$username]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!$user) {
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("SELECT * FROM users WHERE id = ?");
+            $stmt->execute([$id]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$user) {
+                return null;
+            }
+            return new self(
+                $user['id'],
+                $user['username'],
+                $user['password_hash'],
+                $user['role'],
+                $user['created_at'],
+                $user['updated_at'],
+                $user['last_login_at'],
+                $user['locked_until']
+            );
+        } catch (PDOException $e) {
+            error_log('PDOException - User::getUserById() : ' . $e->getMessage(), 0);
             return null;
         }
-        return new self(
-            $user['id'],
-            $user['username'],
-            $user['password_hash'],
-            $user['role'],
-            $user['created_at'],
-            $user['updated_at'],
-            $user['last_login_at'],
-            $user['locked_until']
-        );
     }
 
-    public function delete()
+    public static function getUserByUsername($username)
     {
-        $db = (new Database())->getPdo();
-        $stmt = $db->prepare("DELETE FROM users WHERE id = :id");
-        $stmt->bindParam(':id', $this->id, PDO::PARAM_INT);
-        return $stmt->execute();
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("SELECT * FROM users WHERE username = ?");
+            $stmt->execute([$username]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$user) {
+                return null;
+            }
+            return new self(
+                $user['id'],
+                $user['username'],
+                $user['password_hash'],
+                $user['role'],
+                $user['created_at'],
+                $user['updated_at'],
+                $user['last_login_at'],
+                $user['locked_until']
+            );
+        } catch (PDOException $e) {
+            error_log('PDOException - User::getUserByUsername() : ' . $e->getMessage(), 0);
+            return null;
+        }
+    }
+
+    public static function destroy($id)
+    {
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("DELETE FROM users WHERE id = :id");
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->execute();
+        } catch (PDOException $e) {
+            error_log('PDOException - User::destroy() : ' . $e->getMessage(), 0);
+            throw new PDOException($e->getMessage(), (int) $e->getCode());
+        }
     }
 }

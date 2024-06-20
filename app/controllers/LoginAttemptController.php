@@ -28,5 +28,3 @@ class LoginAttemptController
         $this->loginAttempt->clearLoginAttempts($username);
     }
 }
-
-?>
