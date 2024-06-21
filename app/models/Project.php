@@ -87,6 +87,19 @@ class Project
         }
     }
 
+    public static function getAllProjectsId()
+    {
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("SELECT id FROM projects");
+            $stmt->execute();
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log('PDOException - Project::getAllProjectsId() : ' . $e->getMessage(), 0);
+            return null;
+        }
+    }
+
     public static function getProjectById($id)
     {
         try {

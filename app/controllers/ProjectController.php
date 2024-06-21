@@ -17,6 +17,10 @@ class ProjectController
     {
     }
 
+    public static function getAllProjectsId(){
+        return Project::getAllProjectsId();
+    }
+
     public function index($context = 'user')
     {
         $projects = Project::getAllProjects();

@@ -102,8 +102,7 @@ $router->add('GET',  '/maintenance', ErrorController::class, 'maintenance');
 $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 
-$visit = new VisitController();
-$visit->logVisit($_SERVER['REMOTE_ADDR'], $requestUri, $requestMethod);
+VisitController::logVisit($_SERVER['REMOTE_ADDR'], $requestUri, $requestMethod);
 
 $isPageFound = $router->dispatch($requestUri, $requestMethod);
 

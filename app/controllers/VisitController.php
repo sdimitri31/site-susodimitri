@@ -22,25 +22,80 @@ class VisitController
         View::render('admin/visits/index.php');
     }
 
-    public function logVisit($ip, $url, $method)
+    /**
+     * Insert visit in dababase
+     * @param string $ip 
+     * @param string $url 
+     * @param string $method 
+     * @return bool
+     */
+    public static function logVisit(string $ip, string $url, string $method)
     {
-        $this->visit->logVisit($ip, $url, $method);
+        $logvisit = new Visit();
+        return $logvisit->logVisit($ip, $url, $method);
     }
 
-    public function getVisitStats()
-    {
-        return $this->visit->getVisitStats();
-    }
-
+    /**
+     * Count number of unique IP per Day
+     * @return int
+     */
     public function countTotalVisits()
     {
         return $this->visit->countTotalVisits();
     }
 
+    /**
+     * Count number of visits at selected date
+     * @param string $date 
+     * @return int
+     */
     public function countVisitsAtDate($date)
     {
         return $this->visit->countVisitsAtDate($date);
     }
-}
 
-?>
+    /**
+     * Count number of unique IP at selected date
+     * @param string $date 
+     * @return int
+     */
+    public function countUniqueVisitsAtDate($date)
+    {
+        return $this->visit->countUniqueVisitsAtDate($date);
+    }
+
+    /**
+     * Count number of unique IP at selected url
+     * @param string $url 
+     * @return int
+     */
+    public function countUniqueVisitsAtUrl(string $url)
+    {
+        return $this->visit->countUniqueVisitsAtUrl($url);
+    }
+
+    /**
+     * Get an array containing every visited urls
+     * @return array
+     */
+    public function getVisitedUrls()
+    {
+        return $this->visit->getVisitedUrls();
+    }
+
+    public function getUrlStats(array $urlFilter){
+        $urls = $this->getVisitedUrls();
+        $statsByUrl = [];
+        foreach ($urls as $url) {
+            if (in_array($url, $urlFilter)) {
+                $statsByUrl[] = [
+                    'url' => $url,
+                    'count' => $this->countUniqueVisitsAtUrl($url)
+                ];
+            }
+        }
+        $keyValues = array_column($statsByUrl, 'count');
+        array_multisort($keyValues, SORT_DESC, $statsByUrl);
+        return $statsByUrl;
+    }
+}

@@ -1,5 +1,9 @@
 ﻿Changelog :
 
+Version 1.4:
+- Add: Show stats for urls in visits dashboard
+- Fix: Comments added in Visit and VisitController
+
 Version 1.3:
 - Add: Contacts now can be managed from admin dashboard
 - Fix: Improved error handling

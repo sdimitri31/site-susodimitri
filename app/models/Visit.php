@@ -12,7 +12,14 @@ class Visit
     {
     }
 
-    public function logVisit($ip, $url, $method)
+    /**
+     * Insert visit in dababase
+     * @param string $ip 
+     * @param string $url 
+     * @param string $method 
+     * @return bool
+     */
+    public function logVisit(string $ip, string $url, string $method)
     {
         try {
             $db = Database::getConnection();
@@ -24,19 +31,10 @@ class Visit
         }
     }
 
-    public function getVisitStats()
-    {
-        try {
-            $db = Database::getConnection();
-            $stmt = $db->prepare("SELECT DATE(visited_at) AS visit_date, COUNT(*) AS visit_count FROM visits GROUP BY visit_date ORDER BY visit_date DESC");
-            $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (PDOException $e) {
-            error_log('PDOException - ' . $e->getMessage(), 0);
-            return [];
-        }
-    }
-
+    /**
+     * Count number of unique IP per Day
+     * @return int
+     */
     public function countTotalVisits()
     {
         try {
@@ -49,23 +47,86 @@ class Visit
                     GROUP BY ip, visit_date
                 ) AS daily_visits
             ");
-            return $stmt->fetch(PDO::FETCH_ASSOC)['total_visits'];
+            return intval($stmt->fetch(PDO::FETCH_ASSOC)['total_visits']);
         } catch (PDOException $e) {
             error_log('PDOException - ' . $e->getMessage(), 0);
             return 0;
         }
     }
 
+    /**
+     * Count number of visits at selected date
+     * @param string $date 
+     * @return int
+     */
     public function countVisitsAtDate($date)
+    {
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("SELECT COUNT(*) AS visit_count FROM visits WHERE DATE(visited_at) = ?");
+            $stmt->execute([$date]);
+            return intval($stmt->fetch(PDO::FETCH_ASSOC)['visits_count']);
+        } catch (PDOException $e) {
+            error_log('PDOException - ' . $e->getMessage(), 0);
+            return 0;
+        }
+    }
+
+    /**
+     * Count number of unique IP at selected date
+     * @param string $date 
+     * @return int
+     */
+    public function countUniqueVisitsAtDate($date)
     {
         try {
             $db = Database::getConnection();
             $stmt = $db->prepare("SELECT COUNT(DISTINCT ip) AS visits_count FROM visits WHERE DATE(visited_at) = ?");
             $stmt->execute([$date]);
-            return $stmt->fetch(PDO::FETCH_ASSOC)['visits_count'];
+            return intval($stmt->fetch(PDO::FETCH_ASSOC)['visits_count']);
         } catch (PDOException $e) {
             error_log('PDOException - ' . $e->getMessage(), 0);
             return 0;
+        }
+    }
+
+    /**
+     * Count number of unique IP at selected url
+     * @param string $url 
+     * @return int
+     */
+    public function countUniqueVisitsAtUrl(string $url)
+    {
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("SELECT COUNT(DISTINCT ip) AS visits_count FROM visits WHERE requested_url = ?");
+            $stmt->execute([$url]);
+
+            return intval($stmt->fetch(PDO::FETCH_ASSOC)['visits_count']);
+        } catch (PDOException $e) {
+            error_log('PDOException - ' . $e->getMessage(), 0);
+            return 0;
+        }
+    }
+
+    /**
+     * Get an array containing every visited urls
+     * @return array
+     */
+    public function getVisitedUrls()
+    {
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare("SELECT DISTINCT requested_url FROM visits ORDER BY requested_url ASC");
+            $stmt->execute();
+
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $urls = array_column($results, 'requested_url');
+
+            return $urls;
+        } catch (PDOException $e) {
+            error_log('PDOException - ' . $e->getMessage(), 0);
+            return [];
         }
     }
 
