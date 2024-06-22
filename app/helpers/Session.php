@@ -29,5 +29,3 @@ class Session
         $_SESSION = [];
     }
 }
-
-//Session::init();

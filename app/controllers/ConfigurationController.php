@@ -36,24 +36,11 @@ class ConfigurationController
             }
         }
     }
-
-    public static function checkMaintenanceMode()
+    public static function isMaintenanceMode()
     {
         $configuration = new Configuration();
         $maintenanceMode = $configuration->getValue('maintenance_mode');
-        $maintenanceMode = filter_var($maintenanceMode, FILTER_VALIDATE_BOOLEAN);
-        
-        if ($maintenanceMode) {
-            // Maintenance mode activé
-            $isAdmin = isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
-            $isAdminLoginPage = strpos($_SERVER['REQUEST_URI'], '/admin/login') !== false;
-
-            // Rediriger vers la page de maintenance si ce n'est pas un admin ou une page de connexion admin
-            if (!$isAdmin && !$isAdminLoginPage) {
-                header('Location: /maintenance');
-                exit();
-            }
-        }
+        return filter_var($maintenanceMode, FILTER_VALIDATE_BOOLEAN);
     }
 
     public function index()

@@ -1,5 +1,8 @@
 ﻿Changelog :
 
+Version 1.6:
+- Add: Better routing logic
+
 Version 1.5:
 - Add: Permission to manage contacts added to admin role
 
