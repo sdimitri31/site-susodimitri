@@ -2,10 +2,12 @@
 
 namespace App\Controllers;
 
+use App\Helpers\Authorization;
 use App\Helpers\Csrf;
 use App\Helpers\Session;
 use App\Helpers\View;
 use App\Models\Contact;
+use App\Models\Permission;
 use PDOException;
 
 class ContactController
@@ -22,17 +24,20 @@ class ContactController
         if ($context == 'user') {
             View::render('contact/index.php', ['contacts' => $contacts]);
         } else if ($context == 'admin'){
+            Authorization::requirePermission(Permission::MANAGE_CONTACTS, '/login');
             View::render('admin/contacts/index.php', ['contacts' => $contacts]);
         }
     }
 
     public function create()
     {
+        Authorization::requirePermission(Permission::MANAGE_CONTACTS, '/login');
         View::render('admin/contacts/create.php', ['csrfToken' => Csrf::generateToken()]);
     }
 
     public function store()
     {
+        Authorization::requirePermission(Permission::MANAGE_CONTACTS, '/login');
         Csrf::verifyToken($_POST['csrfToken']);
         $title = $_POST['title'];
         $text = $_POST['text'];
@@ -50,6 +55,7 @@ class ContactController
 
     public function edit($id)
     {
+        Authorization::requirePermission(Permission::MANAGE_CONTACTS, '/login');
         $contact = Contact::getById($id);
         if (is_null($contact)) {
             Session::set('error', 'Erreur lors de la recherche du contact.');
@@ -64,6 +70,7 @@ class ContactController
 
     public function update($id)
     {
+        Authorization::requirePermission(Permission::MANAGE_CONTACTS, '/login');
         Csrf::verifyToken($_POST['csrfToken']);
         $title = $_POST['title'];
         $text = $_POST['text'];
@@ -80,6 +87,7 @@ class ContactController
 
     public function destroy($id)
     {
+        Authorization::requirePermission(Permission::MANAGE_CONTACTS, '/login');
         Csrf::verifyToken($_POST['csrfToken']);
 
         try {

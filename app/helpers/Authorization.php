@@ -26,6 +26,7 @@ class Authorization
             'permissions' => [
                 Permission::MANAGE_USERS,
                 Permission::MANAGE_CONFIGURATION,
+                Permission::MANAGE_CONTACTS,
             ],
             'inherits' => [Role::MODERATOR],
         ],

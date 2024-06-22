@@ -9,6 +9,7 @@ class Permission
     const MANAGE_PROJECTS = 'manage_projects';
     const VIEW_DASHBOARD = 'view_dashboard';
     const MANAGE_CONFIGURATION = 'manage_configuration';
+    const MANAGE_CONTACTS = 'manage_contacts';
 
     public static function getAllPermissions()
     {
@@ -18,6 +19,7 @@ class Permission
             self::MANAGE_PROJECTS,
             self::VIEW_DASHBOARD,
             self::MANAGE_CONFIGURATION,
+            self::MANAGE_CONTACTS,
         ];
     }
 }

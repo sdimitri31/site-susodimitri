@@ -1,5 +1,8 @@
 ﻿Changelog :
 
+Version 1.5:
+- Add: Permission to manage contacts added to admin role
+
 Version 1.4:
 - Add: Show stats for urls in visits dashboard
 - Fix: Comments added in Visit and VisitController
