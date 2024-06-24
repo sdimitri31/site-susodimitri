@@ -7,10 +7,14 @@ class Session
     public static function init()
     {
         include realpath(__DIR__ . '/../../config/config.php');
+
         if ($sessionSettings !== null) {
             session_set_cookie_params($sessionSettings);
         }
-        session_start();
+
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
     }
 
     public static function set($key, $value)
