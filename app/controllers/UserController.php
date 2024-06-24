@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Helpers\AlertMessage;
 use App\Helpers\Csrf;
 use App\Helpers\Session;
 use App\Models\Role;
@@ -18,9 +19,9 @@ class UserController
         Authorization::requirePermission(Permission::MANAGE_USERS, '/home');
         $users = User::getAllUsers();
         if (is_null($users)) {
-            Session::set('error', 'Erreur lors de la recherche des utilisateurs.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Erreur lors de la recherche des utilisateurs.');
         } elseif (empty($users)) {
-            Session::set('error', 'Aucun utilisateur trouvé.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Aucun utilisateur trouvé.');
         }
         View::render('admin/users/index.php', ['users' => $users]);
     }
@@ -30,11 +31,11 @@ class UserController
         Authorization::requirePermission(Permission::MANAGE_USERS, '/home');
         $user = User::getUserById($id);
         if (is_null($user)) {
-            Session::set('error', 'Erreur lors de la recherche de l\'utilisateurs.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Erreur lors de la recherche de l\'utilisateurs.');
             self::index();
             exit();
         } elseif (empty($user)) {
-            Session::set('error', 'Utilisateur non trouvé.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Utilisateur non trouvé.');
             self::index();
             exit();
         }
@@ -81,7 +82,7 @@ class UserController
             header("Location: $redirectUrl");
             exit;
         } catch (Exception $e) {
-            Session::set('error', $e->getMessage());
+            AlertMessage::setAlert(AlertMessage::ERROR, $e->getMessage());
             self::create($context);
         }
     }
@@ -91,9 +92,9 @@ class UserController
         Authorization::requirePermission(Permission::MANAGE_USERS, '/home');
         $user = User::getUserById($id);
         if (is_null($user)) {
-            Session::set('error', 'Erreur lors de la recherche de l\'utilisateur.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Erreur lors de la recherche de l\'utilisateur.');
         } elseif (empty($user)) {
-            Session::set('error', 'Utilisateur non trouvé.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Utilisateur non trouvé.');
         }
         View::render('admin/users/edit.php', ['user' => $user]);
     }
@@ -115,10 +116,10 @@ class UserController
             if ($user->save() === null) {
                 throw new Exception('Une erreur est survenue lors de la mise à jour de l\'utilisateur.');
             }
-            Session::set('message', 'Utilisateur modifié avec succès !');
+            AlertMessage::setAlert(AlertMessage::SUCCESS, 'Utilisateur modifié avec succès !');
             self::index();
         } catch (Exception $e) {
-            Session::set('error', $e->getMessage());
+            AlertMessage::setAlert(AlertMessage::ERROR, $e->getMessage());
             self::edit($id);
         }
     }
@@ -128,10 +129,10 @@ class UserController
         Authorization::requirePermission(Permission::MANAGE_USERS, '/home');
         try {
             User::destroy($id);
-            Session::set('message', 'Utilisateur supprimé avec succès !');
-        } catch (PDOException $e) {
-            Session::set('error', 'Erreur lors de la suppression de l\'utilisateur.');
+            AlertMessage::setAlert(AlertMessage::SUCCESS, 'Utilisateur supprimé avec succès !');
+        } catch (\PDOException $e) {
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Erreur lors de la suppression de l\'utilisateur.');
         }
-        self::index('admin');
+        self::index();
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Helpers\AlertMessage;
 use App\Helpers\Session;
 use App\Models\Project;
 use App\Models\Permission;
@@ -25,9 +26,9 @@ class ProjectController
     {
         $projects = Project::getAllProjects();
         if (is_null($projects)) {
-            Session::set('error', 'Erreur lors de la recherche du projet.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Erreur lors de la recherche du projet.');
         } elseif (empty($projects)) {
-            Session::set('error', 'Aucun projet trouvé.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Aucun projet trouvé.');
         }
 
         if ($context == 'user') {
@@ -41,11 +42,11 @@ class ProjectController
     {
         $project = Project::getProjectById($id);
         if (is_null($project)) {
-            Session::set('error', 'Erreur lors de la recherche du projet.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Erreur lors de la recherche du projet.');
             self::index();
             exit();
         } elseif (empty($project)) {
-            Session::set('error', 'Projet non trouvé.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Projet non trouvé.');
             self::index();
             exit();
         }
@@ -94,10 +95,10 @@ class ProjectController
                 throw new Exception('Une erreur est survenue lors de l\'enregistrement du projet');
             }
 
-            Session::set('message', 'Projet ajouté avec succès !');
+            AlertMessage::setAlert(AlertMessage::SUCCESS, 'Projet ajouté avec succès !');
             self::index('admin');
         } catch (Exception $e) {
-            Session::set('error', $e->getMessage());
+            AlertMessage::setAlert(AlertMessage::ERROR, $e->getMessage());
             self::create();
         }
     }
@@ -107,11 +108,11 @@ class ProjectController
         Authorization::requirePermission(Permission::MANAGE_PROJECTS, '/home');
         $project = Project::getProjectById($id);
         if (is_null($project)) {
-            Session::set('error', 'Erreur lors de la recherche du projet.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Erreur lors de la recherche du projet.');
             self::index('admin');
             exit();
         } elseif (empty($project)) {
-            Session::set('error', 'Projet non trouvé.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Projet non trouvé.');
             self::index('admin');
             exit();
         }
@@ -145,10 +146,10 @@ class ProjectController
                 throw new Exception('Une erreur est survenue lors de la mise à jour du projet');
             }
 
-            Session::set('message', 'Projet édité avec succès !');
+            AlertMessage::setAlert(AlertMessage::SUCCESS, 'Projet édité avec succès !');
             self::index('admin');
         } catch (Exception $e) {
-            Session::set('error', $e->getMessage());
+            AlertMessage::setAlert(AlertMessage::ERROR, $e->getMessage());
             self::edit($id);
         }
     }
@@ -158,9 +159,9 @@ class ProjectController
         Authorization::requirePermission(Permission::MANAGE_PROJECTS, '/home');
         try {
             Project::destroy($id);
-            Session::set('message', 'Projet supprimé avec succès !');
+            AlertMessage::setAlert(AlertMessage::SUCCESS, 'Projet supprimé avec succès !');
         } catch (PDOException $e) {
-            Session::set('error', 'Erreur lors de la suppression du projet.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Erreur lors de la suppression du projet.');
         }
         self::index('admin');
     }

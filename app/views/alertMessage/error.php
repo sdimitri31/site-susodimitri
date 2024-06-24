@@ -1,0 +1,1 @@
+<div class="alert alert-danger mt-4"><?= htmlspecialchars($message) ?></div>

@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Helpers\AlertMessage;
 use App\Helpers\Authorization;
 use App\Helpers\Csrf;
 use App\Helpers\Session;
@@ -16,9 +17,9 @@ class ContactController
     {
         $contacts = Contact::getAllContacts();
         if (is_null($contacts)) {
-            Session::set('error', 'Erreur lors de la recherche du contact.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Erreur lors de la recherche du contact.');
         } elseif (empty($contacts)) {
-            Session::set('error', 'Aucun contact trouvé.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Aucun contact trouvé.');
         }
 
         if ($context == 'user') {
@@ -45,10 +46,10 @@ class ContactController
 
         try {
             Contact::create($title, $text, $link);
-            Session::set('message', 'Nouveau contact créé avec succès !');
+            AlertMessage::setAlert(AlertMessage::SUCCESS, 'Nouveau contact créé avec succès !');
             self::index('admin');
         } catch (PDOException $e) {
-            Session::set('error', 'Erreur lors de la création du contact.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Erreur lors de la création du contact.');
             self::create();
         }
     }
@@ -58,10 +59,10 @@ class ContactController
         Authorization::requirePermission(Permission::MANAGE_CONTACTS, '/login');
         $contact = Contact::getById($id);
         if (is_null($contact)) {
-            Session::set('error', 'Erreur lors de la recherche du contact.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Erreur lors de la recherche du contact.');
             self::index('admin');
         } elseif (empty($contact)) {
-            Session::set('error', 'Contact non trouvé.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Contact non trouvé.');
             self::index('admin');
         } else {
             View::render('admin/contacts/edit.php', ['contact' => $contact, 'csrfToken' => Csrf::generateToken()]);
@@ -78,9 +79,9 @@ class ContactController
 
         try {
             Contact::update($id, $title, $text, $link);
-            Session::set('message', 'Contact mis à jour avec succès !');
+            AlertMessage::setAlert(AlertMessage::SUCCESS, 'Contact mis à jour avec succès !');
         } catch (PDOException $e) {
-            Session::set('error', 'Erreur lors de la mise à jour du contact.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Erreur lors de la mise à jour du contact.');
         }
         self::index('admin');
     }
@@ -92,9 +93,9 @@ class ContactController
 
         try {
             Contact::destroy($id);
-            Session::set('message', 'Contact supprimé avec succès !');
+            AlertMessage::setAlert(AlertMessage::SUCCESS, 'Contact supprimé avec succès !');
         } catch (PDOException $e) {
-            Session::set('error', 'Erreur lors de la suppression du contact.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Erreur lors de la suppression du contact.');
         }
         self::index('admin');
     }

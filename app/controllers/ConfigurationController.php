@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Helpers\AlertMessage;
 use App\Helpers\Session;
 use App\Models\Configuration;
 use App\Models\Permission;
@@ -64,9 +65,9 @@ class ConfigurationController
 
         try {
             $this->configuration->update($setting_name, $setting_value);
-            Session::set('message', 'Paramètre mis à jour avec succès !');
+            AlertMessage::setAlert(AlertMessage::SUCCESS,'Paramètre mis à jour avec succès !');
         } catch (PDOException $e) {
-            Session::set('error', 'Erreur lors de la mise à jour du paramètre.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Erreur lors de la mise à jour du paramètre.');
         }
         self::index();
     }
@@ -87,10 +88,10 @@ class ConfigurationController
 
             try {
                 $this->configuration->create($setting_name, $setting_value, $setting_type);
-                Session::set('message', 'Nouveau paramètre créé avec succès !');
+                AlertMessage::setAlert(AlertMessage::SUCCESS, 'Nouveau paramètre créé avec succès !');
                 self::index();
             } catch (PDOException $e) {
-                Session::set('error', 'Erreur lors de la création du paramètre.');
+                AlertMessage::setAlert(AlertMessage::ERROR, 'Erreur lors de la création du paramètre.');
                 self::create();
             }
         }
@@ -102,9 +103,9 @@ class ConfigurationController
 
         try {
             $this->configuration->destroy($id);
-            Session::set('message', 'Paramètre supprimé avec succès !');
+            AlertMessage::setAlert(AlertMessage::SUCCESS, 'Paramètre supprimé avec succès !');
         } catch (PDOException $e) {
-            Session::set('error', 'Erreur lors de la suppression du paramètre.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Erreur lors de la suppression du paramètre.');
         }
 
         self::index();

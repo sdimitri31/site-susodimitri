@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Helpers\AlertMessage;
 use App\Helpers\Session;
 use App\Models\Homepage;
 use App\Models\Permission;
@@ -15,9 +16,9 @@ class HomepageController
     {
         $homepage = Homepage::getHomepage();
         if (is_null($homepage)) {
-            Session::set('error', 'Erreur lors de la recherche de la page d\'accueil.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Erreur lors de la recherche de la page d\'accueil.');
         } elseif (empty($homepage)) {
-            Session::set('error', 'Aucune page d\'accueil trouvée.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Aucune page d\'accueil trouvée.');
         }
 
         if ($context == 'user') {
@@ -33,11 +34,11 @@ class HomepageController
         Authorization::requirePermission(Permission::MANAGE_HOMEPAGE, '/home');
         $content = Homepage::getHomepage();
         if (is_null($content)) {
-            Session::set('error', 'Erreur lors de la recherche de la page d\'accueil.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Erreur lors de la recherche de la page d\'accueil.');
             self::index('admin');
             exit();
         } elseif (empty($content)) {
-            Session::set('error', 'Page d\'accueil non trouvée.');
+            AlertMessage::setAlert(AlertMessage::ERROR, 'Page d\'accueil non trouvée.');
             self::index('admin');
             exit();
         }
@@ -54,10 +55,10 @@ class HomepageController
         ];
         try {
             Homepage::updateContent($data);
-            Session::set('message', 'Page d\'accueil éditée avec succès !');
+            AlertMessage::setAlert(AlertMessage::SUCCESS, 'Page d\'accueil éditée avec succès !');
             self::index('admin');
         }catch (Exception $e) {
-            Session::set('error', $e->getMessage());
+            AlertMessage::setAlert(AlertMessage::ERROR, $e->getMessage());
             self::edit();
         }
     }

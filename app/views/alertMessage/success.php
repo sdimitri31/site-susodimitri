@@ -1,0 +1,1 @@
+<div class="alert alert-success mt-4"><?= htmlspecialchars($message) ?></div>
